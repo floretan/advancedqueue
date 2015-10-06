@@ -1,0 +1,5 @@
+name: Advanced Queues
+description: Helper module for advanced queuing.
+package: Other
+core: 8.x
+type: module
