@@ -5,6 +5,8 @@
  * Helper module for advanced queuing.
  */
 
+use Drupal\Core\Form\FormStateInterface;
+
 /**
  * Status indicating item was added to the queue.
  */
@@ -79,14 +81,26 @@ function advancedqueue_cron() {
  *
  * Add Advanced queue setting to use cron, to the cron settings page.
  */
-function advancedqueue_form_system_cron_settings_alter(&$form, $form_state, $form_id) {
-  $form['advancedqueue_use_cron'] = array(
+function advancedqueue_form_system_cron_settings_alter(array &$form, FormStateInterface $form_state) {
+  $form['advancedqueue_use_cron'] = [
     '#type' => 'checkbox',
     '#title' => t('Process Advanced Queue via Cron'),
     '#multiple' => TRUE,
     '#description' => t('Enable to allow queue items to to be processed using Cron. This is a "poor man\'s" option that allows processing the queue, as the better solution would be to execute the Drush command via the command line.'),
-    '#default_value' => variable_get('advancedqueue_use_cron', FALSE),
-  );
+    '#default_value' => \Drupal::config('advancedqueue.settings')->get('advancedqueue_use_cron'),
+  ];
+
+  $form['#submit'][] = 'advancedqueue_form_system_cron_settings_submit';
+}
+
+/**
+ * Additional submit handler for
+ */
+function advancedqueue_form_system_cron_settings_submit(array &$form, FormStateInterface $form_state) {
+  /** @var Drupal\Core\Config\Config $config */
+  $config = \Drupal::service('config.factory')->getEditable('advancedqueue.settings');
+  $config->set('advancedqueue_use_cron', $form_state->getValue('advancedqueue_use_cron'));
+  $config->save();
 }
 
 /**
